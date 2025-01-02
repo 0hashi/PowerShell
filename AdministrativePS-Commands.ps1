@@ -53,19 +53,20 @@ Invoke-Command -ComputerName ENG-TECH2.verticalcable.local -ScriptBlock { Get-Pr
 Get-AzureADSubscribedSku 
 
 #PO - List total and used Azure licenses
-Get-AzureADSubscribedSku | Select-Object SkuPartNumber, SkuId, @{Name="TotalLicenses";Expression={$_.ConsumedUnits + $_.PrepaidUnits.Enabled}}, @{Name="UsedLicenses";Expression={$_.ConsumedUnits}}
+Get-AzureADSubscribedSku | Select-Object SkuPartNumber, SkuId @{Name="TotalLicenses";Expression={$_.ConsumedUnits + $_.PrepaidUnits.Enabled}}, @{Name="UsedLicenses";Expression={$_.ConsumedUnits}}
 
 #PO -List users with licenses assigned
-Get-AzureADUser -All $true | Where-Object {$_.AssignedLicenses -ne $null} | Select-Object DisplayName, UserPrincipalName, @{Name="Licenses";Expression={($_.AssignedLicenses).SkuId}}
+cls
 
-#PO - Get a list of users and their assigned licenses (I do not have permissions)
-Get-MgUser -All -Property AssignedLicenses,DisplayName,UserPrincipalName | ForEach-Object {
+#PO - Get a list of users and their assigned licenses 
+Get-AzureADUser -All $true | ForEach-Object {
     $user = $_
-    foreach ($license in $user.AssignedLicenses) {
+    $licenses = Get-AzureADUserLicenseDetail -ObjectId $user.ObjectId
+    $licenses | ForEach-Object {
         [PSCustomObject]@{
             UserPrincipalName = $user.UserPrincipalName
             DisplayName       = $user.DisplayName
-            LicenseSku        = $license.SkuId
+            LicenseSku        = $_.SkuPartNumber
         }
     }
 } | Format-Table -AutoSize
