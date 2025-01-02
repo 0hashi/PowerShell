@@ -1,4 +1,30 @@
-﻿#PO - Get AD User info
+﻿#PO - Get/Set Execution Policy (RemoteSigned or Unrestricted)
+Get-ExecutionPolicy
+Set-ExecutionPolicy Unrestricted
+
+#--------------------------------------------------------------------
+#PO - AzureAD/Entra ID & Microsoft Graph PowerShell Modules. The AzureAD Module is being replaced by the MS Graph Powershell Module
+#
+# Depending on which module you want to use (AzureAD or Microsoft Graph API) make sure the module is installed.
+#
+# Import the AzureAD, or Microsoft Graph module and connect before running queries.
+
+#PO - If needed, install and import the AzureAD PowerShell Module
+Install-Module AzureAD
+Import-Module AzureAD
+
+#PO - Connect to AzureAD
+Connect-AzureAD
+#------------------------------
+#PO - If needed, install and import Microsoft Graph API
+Install-Module -Name Microsoft.Graph -Force
+Import-Module Microsoft.Graph
+
+#PO - Connect/Authenticate Microsoft Graph
+Connect-MgGraph
+#--------------------------------------------------------------------
+
+#PO - Get AD User info
 Get-ADUser announcement1
 
 #PO - Get the domain role of a system
@@ -23,23 +49,23 @@ Search-ADAccount -AccountDisabled -UsersOnly -SearchBase "OU=Texas,DC=verticalca
 #PO - Execute remote PowerShell cmd
 Invoke-Command -ComputerName ENG-TECH2.verticalcable.local -ScriptBlock { Get-Process }
 
-#PO - AzureAD/Entra ID & Microsoft Graph PowerShell Modules. The AzureAD Module is being replaced by the MS Graph Powershell Module
-#
-# Make sure the AzureAD Module is installed (Install-Module -Name AzureAD)
-#
-# Import the AzureAD module and connect to AzureAD before running queries.
-# Also install Microsoft Graph with: Install-Module Microsoft.Graph
+#PO - Get a list of AzureAD subscriptions
+Get-AzureADSubscribedSku 
 
-Install-Module Microsoft.Graph
-
-Import-Module AzureAD #PO - Import the AzureAD module into this session
-Connect-AzureAD       #PO - Connect to AzureAD
-
-Get-AzureADSubscribedSku #PO - List AzureAD subscriptions
-
-#PO - List total and used Azure licenses (AzureAD Module)
+#PO - List total and used Azure licenses
 Get-AzureADSubscribedSku | Select-Object SkuPartNumber, SkuId, @{Name="TotalLicenses";Expression={$_.ConsumedUnits + $_.PrepaidUnits.Enabled}}, @{Name="UsedLicenses";Expression={$_.ConsumedUnits}}
 
 #PO -List users with licenses assigned
 Get-AzureADUser -All $true | Where-Object {$_.AssignedLicenses -ne $null} | Select-Object DisplayName, UserPrincipalName, @{Name="Licenses";Expression={($_.AssignedLicenses).SkuId}}
 
+#PO - Get a list of users and their assigned licenses (I do not have permissions)
+Get-MgUser -All -Property AssignedLicenses,DisplayName,UserPrincipalName | ForEach-Object {
+    $user = $_
+    foreach ($license in $user.AssignedLicenses) {
+        [PSCustomObject]@{
+            UserPrincipalName = $user.UserPrincipalName
+            DisplayName       = $user.DisplayName
+            LicenseSku        = $license.SkuId
+        }
+    }
+} | Format-Table -AutoSize
