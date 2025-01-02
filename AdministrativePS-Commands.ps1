@@ -47,20 +47,15 @@ Get-EventLog -LogName Security | Where-Object {$_.EventID -eq 4624} | Select-Obj
 Search-ADAccount -AccountDisabled -UsersOnly -SearchBase "OU=Texas,DC=verticalcable,DC=local" | FT Name, DistinguishedName | Measure-Object -Line
 
 #PO - Execute remote PowerShell cmd
-Invoke-Command -ComputerName ENG-TECH2.verticalcable.local -ScriptBlock { Get-Process }
+Invoke-Command -ComputerName e6workstation -ScriptBlock { Enable-NetFirewallRule -Name "WMI-In-TCP" }
 
 #PO - Get a list of AzureAD subscriptions
 Get-AzureADSubscribedSku 
 
-#PO - List total and used Azure licenses
-Get-AzureADSubscribedSku | Select-Object SkuPartNumber, SkuId @{Name="TotalLicenses";Expression={$_.ConsumedUnits + $_.PrepaidUnits.Enabled}}, @{Name="UsedLicenses";Expression={$_.ConsumedUnits}}
-
-#PO -List users with licenses assigned
-cls
-
-#PO - Get a list of users and their assigned licenses 
+#PO - Get a list of users and their assigned license SKUs
 Get-AzureADUser -All $true | ForEach-Object {
     $user = $_
+
     $licenses = Get-AzureADUserLicenseDetail -ObjectId $user.ObjectId
     $licenses | ForEach-Object {
         [PSCustomObject]@{
@@ -70,3 +65,22 @@ Get-AzureADUser -All $true | ForEach-Object {
         }
     }
 } | Format-Table -AutoSize
+
+
+# Shutdown Windows systems remotely.
+# Comma delimited list of computers to shut down
+$ComputerNames = @("e6workstation")
+
+# Credentials for remote access
+$Credential = Get-Credential
+
+# Iterate through each computer and attempt to shut it down
+foreach ($Computer in $ComputerNames) {
+    try {
+        Write-Host "Attempting to shut down $Computer..." -ForegroundColor Yellow
+        Stop-Computer -ComputerName $Computer -Credential $Credential -Force -Confirm:$false
+        Write-Host "$Computer has been shut down successfully." -ForegroundColor Green
+    } catch {
+        Write-Host "Failed to shut down $Computer. Error: $_" -ForegroundColor Red
+    }
+}
