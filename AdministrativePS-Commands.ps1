@@ -24,8 +24,14 @@ Import-Module Microsoft.Graph
 Connect-MgGraph
 #--------------------------------------------------------------------
 
+Invoke-Command -ComputerName tci-tw-cbl -ScriptBlock { systeminfo | find "System Boot Time" }
+
+#--------------------------------------------------------------------
+
 #PO - Get AD User info
 Get-ADUser announcement1
+
+#--------------------------------------------------------------------
 
 #PO - Get the domain role of a system
 # - 0x0: Standalone workstation
@@ -34,22 +40,32 @@ Get-ADUser announcement1
 # - 0x3: Member server
 # - 0x4: Backup domain controller
 # - 0x5: Primary domain controller
+
 wmic computersystem get DomainRole
+
+#--------------------------------------------------------------------
 
 #PO - Who's logged on, where?
 qwinsta /server:172.18.1.4 | Where-Object {$_ -notmatch "SYSTEM"}
 
+#--------------------------------------------------------------------
 
 #PO - Search Security Event log for logons in the last (x) days.
 Get-EventLog -LogName Security | Where-Object {$_.EventID -eq 4624} | Select-Object -Property @{Name='TimeGenerated';Expression={$_.TimeGenerated}}, @{Name='User';Expression={$_.ReplacementStrings[5]}} | Sort-Object TimeGenerated -Descending | Where-Object {$_.TimeGenerated -ge (Get-Date).AddDays(-5)} | Where-Object {$_ -notmatch "SYSTEM"}
+
+#--------------------------------------------------------------------
 
 #PO - Display the number of disabled user accounts.
 Search-ADAccount -AccountDisabled -UsersOnly -SearchBase "OU=Texas,DC=verticalcable,DC=local" | FT Name, DistinguishedName | Measure-Object -Line
 #PO - Display the disabled user accounts.
 Search-ADAccount -AccountDisabled -UsersOnly -SearchBase "OU=Texas,DC=verticalcable,DC=local" | FT Name, DistinguishedName
 
+#--------------------------------------------------------------------
+
 #PO - Execute remote PowerShell cmd
 Invoke-Command -ComputerName design1 -ScriptBlock { Get-LocalGroupMember -Group $GroupName }
+
+#--------------------------------------------------------------------
 
 #PO - Get a list of AzureAD subscriptions
 Get-AzureADSubscribedSku 
@@ -90,8 +106,12 @@ foreach ($Computer in $ComputerNames) {
     }
 }
 
+#--------------------------------------------------------------------
+
 # Shutdown Windows with WMIC
 Invoke-Command -ComputerName computername -ScriptBlock { shutdown /s /t 0 }
+
+#--------------------------------------------------------------------
 
 #PO - Backup DNS
 # Specify the DNS server and zone
@@ -109,6 +129,7 @@ $DnsServer = "verttxdc001"
 # List all zones to verify the zone name
 Get-DnsServerZone -ComputerName $DnsServer
 
+#--------------------------------------------------------------------
 
 $ZoneName = "verticalcable.local"
 $DnsServer = "VERTTXDC001.verticalcable.local"
@@ -124,5 +145,6 @@ $Duplicates | ForEach-Object {
     Write-Output "Duplicate IP Address: $($_.Name) - Count: $($_.Count)"
 }
 
+#--------------------------------------------------------------------
 
 Get-DhcpServerv4Reservation -ComputerName "10.100.104.7" -ScopeId 10.100.104.0
