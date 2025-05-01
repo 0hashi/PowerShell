@@ -11,7 +11,7 @@
 #    the Trans Cable Users in Active Directory User Accounts
 #
 # NOTE: The employee spreadsheet exists on TCI IT SharePoint site in the following location:
-#       (Documents > Information Technology > ActiveDirectoryAzureEntraID > EmployeeActiveDirectoryAccounts)
+#       (Documents > a > b > c)
 #
 # Usage:    1. Download EmployeeActiveDirectoryAccounts.xlsx as a .csv file.
 #              (this may work as .xlsx, but I had issues while testing). 
@@ -22,10 +22,10 @@
 # NOTE: Version 2.0 will read the spreadsheet from SharePoint directly (no need to download and convert to .csv).
 #
 # Define the target OU
-$targetOU = "OU=Texas,DC=verticalcable,DC=local"
+$targetOU = "enter your users OU"
 
 # Import CSV and trim all headers/values
-$usersRaw = Import-Csv -Path "C:\Users\paulo\Desktop\ActiveDirectory\TestDev\EmployeeActiveDirectoryAccounts(Employee List).csv"
+$usersRaw = Import-Csv -Path "C:\path\to\EmployeeActiveDirectoryAccounts(Employee List).csv"
 
 # Debug output: Show all headers once
 Write-Host "Detected Columns:" -ForegroundColor Cyan
