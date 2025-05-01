@@ -84,7 +84,7 @@ Get-AzureADUser -All $true | ForEach-Object {
             LicenseSku        = $_.SkuPartNumber
         }
     }
-} | Format-Table -AutoSize 
+} | Format-Table -AutoSize  >AzureADUserLicenseDetails.cvs
 
 #--------------------------------------------------------------------
 
@@ -228,7 +228,7 @@ foreach ($group in $groups) {
 
 #--------------------------------------------------------------------
 #PO - Get group membership of user
-Get-ADPrincipalGroupMembership -Identity "lead.operator" | Select-Object name
+Get-ADPrincipalGroupMembership -Identity "tw-exp" | Select-Object name | Write-Host 
 
 #--------------------------------------------------------------------
 
@@ -244,3 +244,160 @@ Get-ADUser -Identity $User | Get-ADPrincipalGroupMembership | Select-Object Name
 
 
 Get-ADUser -Filter { extensionAttribute1 -notlike "*" } -Properties extensionAttribute1
+
+#--------------------------------------------------------------------
+
+# Get all disabled users. Good for STDOUT or printing
+$disabledUsers = Get-ADUser -Filter * -Properties Enabled, MemberOf | Where-Object {$_.Enabled -eq $false}
+
+# For each disabled user, get their group memberships
+foreach ($user in $disabledUsers) {
+    Write-Host "Disabled User: $($user.Name)"
+    $groups = $user.MemberOf | Get-ADGroup -Properties Name
+    foreach ($group in $groups) {
+        Write-Host "  - Member of: $($group.Name)"
+    }
+    Write-Host ""
+}
+
+#--------------------------------------------------------------------
+
+# Get all disabled users and their group membership and print the output to
+# C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.csv
+# This script runs via Task Scheduler twice a day at 0400 and 1600.
+Import-Module ActiveDirectory
+
+$disabledUsers = Get-ADUser -Filter {Enabled -eq $false} -Properties MemberOf
+
+$report = @()
+
+foreach ($user in $disabledUsers) {
+    $groups = $user.MemberOf | ForEach-Object {
+        (Get-ADGroup $_).Name
+    }
+
+    $report += [PSCustomObject]@{
+        UserName = $user.SamAccountName
+        Groups   = $groups -join ","
+    }
+}
+$logRotateDate = Get-Date -format "yyyyMMddhhmmss"
+Copy-Item -Path "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.csv" -Destination "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.$logRotateDate.csv"
+$report | Export-Csv -Path "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.csv" -NoTypeInformation
+
+#--------------------------------------------------------------------
+
+# List all active AD users and their group membership, ignore errors
+# and print output to C:\inetpub\wwwroot\activedirectory\logs\active_users_and_groups.csv
+# Import the Active Directory module
+# Import Active Directory module
+Import-Module ActiveDirectory
+
+# Get all active users from Active Directory
+$ActiveUsers = Get-ADUser -Filter {Enabled -eq $true} -Properties MemberOf, DisplayName | Sort-Object Name
+
+# Iterate through each active user to get their group memberships
+$Result = foreach ($User in $ActiveUsers) {
+    # Fetch the user's groups
+    $Groups = $User.MemberOf | ForEach-Object {
+        (Get-ADGroup $_).Name
+    }
+
+    # Create a custom object with user details and group memberships
+    [PSCustomObject]@{
+        UserName   = $User.SamAccountName
+        DisplayName = $User.DisplayName
+        Groups     = $Groups -join ", " # Join group names into a comma-separated string
+    }
+}
+# If an active_users_and_groups.csv file exists in the log directory, roll it over and create a new one.
+# Output the result to the console and to C:\inetpub\wwwroot\activedirectory\logs\active_users_and_groups.csv
+$logFile = "C:\inetpub\wwwroot\activedirectory\logs\active_users_and_groups.csv"
+
+if (Test-Path $logFile) {
+    $logRotateDate = Get-Date -format "yyyyMMddhhmmss"
+    Copy-Item -Path "$logFile" -Destination "$logFile.$logRotateDate.csv"
+}
+
+$Result | Sort-Object UserName | Format-Table -AutoSize
+$Result | Export-Csv -Path "C:\inetpub\wwwroot\activedirectory\logs\active_users_and_groups.csv" -NoTypeInformation
+
+
+
+Import-Module ActiveDirectory
+
+$disabledUsers = Get-ADUser -Filter {Enabled -eq $false} -Properties MemberOf
+
+$report = @()
+
+foreach ($user in $disabledUsers) {
+    $groups = $user.MemberOf | ForEach-Object {
+        (Get-ADGroup $_).Name
+    }
+
+    $report += [PSCustomObject]@{
+        UserName = $user.SamAccountName
+        Name     = $user.Name
+        DN       = $user.DistinguishedName
+        Groups   = $groups -join ","
+    }
+}
+#$copyDate = Get-Date -format "yyyyMMddhhmmss"
+#Copy-Item -Path "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.csv" -Destination "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.$copyDate.csv"
+$report
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Import-Module ActiveDirectory
+
+$disabledUsers = Get-ADUser -Filter {Enabled -eq $false} -Properties MemberOf
+
+$report = @()
+
+foreach ($user in $disabledUsers) {
+    $groups = $user.MemberOf | ForEach-Object {
+        (Get-ADGroup $_).Name
+    }
+
+    $report += [PSCustomObject]@{
+        UserName = $user.SamAccountName
+        Name     = $user.Name
+        DN	     = $user.DistinguishedName
+        Groups   = $groups -join ","
+    }
+}
+#$copyDate = Get-Date -format "yyyyMMddhhmmss"
+#Copy-Item -Path "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.csv" -Destination "C:\inetpub\wwwroot\activedirectory\logs\disabled_users_and_groups.$copyDate.csv"
+$report | Format-Table -AutoSize
