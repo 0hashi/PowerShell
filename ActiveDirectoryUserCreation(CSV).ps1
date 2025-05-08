@@ -1,4 +1,28 @@
-﻿# Define the target OU
+
+# Active Directory user creation script
+#
+# Filename: ActiveDirectoryUserCreation(CSV).ps1
+# Version 1.0
+# Date: 5-1-2025
+# Paul Ohashi, Trans Cable International
+#
+# This script serves two purposes: 
+# 1. To create new AD User accounts for new employees.
+# 2. To verify the EmployeeActiveDirectoryAccounts.xlsx file has parity with
+#    the Trans Cable Users in Active Directory User Accounts
+#
+# NOTE: The employee spreadsheet exists on TCI IT SharePoint site in the following location:
+#       (Documents > a > b > c)
+#
+# Usage:    1. Download EmployeeActiveDirectoryAccounts.xlsx as a .csv file.
+#              (this may work as .xlsx, but I had issues while testing). 
+#           2. Update the $usersRaw variable with the path and filename of the downloaded .csv spreadsheet.
+#           3. Verify the $targetOU is where you want new users created.
+#           4. Run this script.
+#
+# NOTE: Version 2.0 will read the spreadsheet from SharePoint directly (no need to download and convert to .csv).
+#
+# Define the target OU
 $targetOU = "OU=TestDev,OU=Texas,DC=verticalcable,DC=local"
 
 # Load users from CSV
