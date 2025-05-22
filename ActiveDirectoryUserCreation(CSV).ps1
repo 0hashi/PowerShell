@@ -1,4 +1,3 @@
-
 # Active Directory user creation script
 #
 # Filename: ActiveDirectoryUserCreation(CSV).ps1
@@ -15,9 +14,9 @@
 #       (Documents > a > b > c)
 #
 # Usage:    1. Download EmployeeActiveDirectoryAccounts.xlsx as a .csv file.
-#              (this may work as .xlsx, but I had issues while testing). 
+#              (this may work as .xlsx, but I had issues while testing, so I converted it to .csv). 
 #           2. Update the $usersRaw variable with the path and filename of the downloaded .csv spreadsheet.
-#           3. Verify the $targetOU is where you want new users created.
+#           3. Verify the $targetOU is where you want new users created/updated.
 #           4. Run this script.
 #
 # NOTE: Version 2.0 will read the spreadsheet from SharePoint directly (no need to download and convert to .csv).
