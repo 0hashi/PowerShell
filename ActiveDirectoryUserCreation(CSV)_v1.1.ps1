@@ -1,8 +1,9 @@
 ﻿# Active Directory user creation script
 #
 # Filename: ActiveDirectoryUserCreation(CSV)_v1.1.ps1
-# Version 1.0
-# Date: 5-1-2025
+# Version 1.1
+# Version 1.0: 5-1-2025
+# Version 1.1 6-16-2025
 # Paul Ohashi, Trans Cable International
 #
 # This script serves two purposes: 
@@ -11,7 +12,7 @@
 #    the Trans Cable Users in Active Directory User Accounts
 #
 # NOTE: The employee spreadsheet exists on TCI IT SharePoint site in the following location:
-#       (Documents > a > b > c)
+#       (Documents > Information Technology > ActiveDirectoryAzureEntraID > EmployeeActiveDirectoryAccounts)
 #
 # Usage:    1. Download EmployeeActiveDirectoryAccounts.xlsx as a .csv file.
 #              (this may work as .xlsx, but I had issues while testing, so I converted it to .csv). 
