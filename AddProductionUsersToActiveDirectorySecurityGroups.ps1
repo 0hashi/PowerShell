@@ -8,9 +8,7 @@
 
 # Define the list of users (sAMAccountNames or DNs)
 $users = @(
-    "Paul.Gray",
-    "Ratan.Shah",
-    "Miichael.Hintergardt"
+    "Jesus.Frias"
 )
 
 # Define the list of security groups
@@ -18,6 +16,7 @@ $groups = @(
     "Production",
     "SP_Production",
     "SP_TCI-All",
+    "OSHA Training",
     "TCI Manufacturing",
     "TCI Safety",
     "Texas Users"
