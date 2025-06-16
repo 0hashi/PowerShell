@@ -22,16 +22,10 @@
 #
 # NOTE: Version 2.0 will read the spreadsheet from SharePoint directly (no need to download and convert to .csv).
 #
-
-
 # User creation source CSV file should be in the following format:
 # Employee Name,Employee ID,Job Title,Department,Employment Status,Start Date,Termination Date,sAMAccountName,System Access,Role-Based Access Level,MFA Enabled,Background Check Complete,Company,Manager,Telephone
 # Jesus Frias,248,Machine Operator,Production,Active,6/9/2025,,Jesus.Frias,AD - ERP (Rubicon) - SharePoint,Standard User,No,Yes,Trans Cable International,billyb,903-449-4622
 # Jessiah Kinnamon,249,Maintenance Tech,Maintenance,Active,6/16/2025,,Jessiah.Kinnamon,AD - Email (M365) - ERP (Rubicon) - SharePoint,Standard User,Yes,Yes,Trans Cable International,chadm,903-449-4622
-
-
-
-
 
 Import-Module ActiveDirectory
 
