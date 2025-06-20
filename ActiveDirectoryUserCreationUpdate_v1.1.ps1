@@ -1,9 +1,11 @@
 ﻿# Active Directory user creation script
 #
-# Filename: ActiveDirectoryUserCreation(CSV)_v1.1.ps1
+# Filename: ActiveDirectoryUserCreationUpdate_v1.1.ps1
 # Version 1.1
 # Version 1.0: 5-1-2025
 # Version 1.1 6-16-2025
+# Renamed to ActiveDirectoryUserCreationUpdate_v1.1.ps1 6-18-25
+#
 # Paul Ohashi, Trans Cable International
 #
 # This script serves two purposes: 
@@ -54,42 +56,45 @@ foreach ($user in $users) {
     if ($existingUser) {
         # Update existing user
         Set-ADUser -Identity $username `
-    -GivenName $givenName `
-    -Surname $surname `
-    -DisplayName "$givenName $surname" `
-    -Title $user.'Job Title' `
-    -Department $user.Department `
-    -Company $user.Company `
-    -Manager $managerDN `
-    -OfficePhone $user.Telephone `
-    -Office "Bonham TX" `
-    -Description "Start: $($user.'Start Date')" `
-    -Replace @{wWWHomePage = "https://transcableusa.com/"}
+            -GivenName $givenName `
+            -Surname $surname `
+            -DisplayName "$givenName $surname" `
+            -Title $user.'Job Title' `
+            -Department $user.Department `
+            -Company $user.Company `
+            -Manager $managerDN `
+            -OfficePhone $user.Telephone `
+            -Office "Bonham TX" `
+            -Description "Start: $($user.'Start Date')" `
+            -EmployeeNumber $user.'Employee ID' `
+            -Replace @{wWWHomePage = "https://transcableusa.com/"}
+
         Write-Host "Updated user: $username"
     }
     else {
-    # Create new user in the specified OU
-    New-ADUser `
-        -SamAccountName $username `
-        -UserPrincipalName "$username@verticalcable.local" `
-        -Name $user.'Employee Name' `
-        -GivenName $givenName `
-        -Surname $surname `
-        -DisplayName "$givenName $surname" `
-        -Title $user.'Job Title' `
-        -Department $user.Department `
-        -Company $user.Company `
-        -Manager $managerDN `
-        -OfficePhone $user.Telephone `
-        -Office "Bonham TX" `
-        -Description "Start: $($user.'Start Date')" `
-        -Path $targetOU `
-        -AccountPassword (ConvertTo-SecureString "TempP@ssw0rd!" -AsPlainText -Force) `
-        -Enabled:$true
+        # Create new user in the specified OU
+        New-ADUser `
+            -SamAccountName $username `
+            -UserPrincipalName "$username@verticalcable.local" `
+            -Name $user.'Employee Name' `
+            -GivenName $givenName `
+            -Surname $surname `
+            -DisplayName "$givenName $surname" `
+            -Title $user.'Job Title' `
+            -Department $user.Department `
+            -Company $user.Company `
+            -Manager $managerDN `
+            -OfficePhone $user.Telephone `
+            -Office "Bonham TX" `
+            -Description "Start: $($user.'Start Date')" `
+            -EmployeeNumber $user.'Employee ID' `
+            -Path $targetOU `
+            -AccountPassword (ConvertTo-SecureString "TempP@ssw0rd!" -AsPlainText -Force) `
+            -Enabled:$true
 
-    # Set additional attribute after creation
-    Set-ADUser -Identity $username -Replace @{wWWHomePage = "https://transcableusa.com/"}
+        # Set additional attribute after creation
+        Set-ADUser -Identity $username -Replace @{wWWHomePage = "https://transcableusa.com/"}
 
-    Write-Host "Created new user: $username in OU $targetOU"
+        Write-Host "Created new user: $username in OU $targetOU"
     }
 }
